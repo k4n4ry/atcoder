@@ -10,29 +10,18 @@ import (
 
 func main() {
 	sc := newScanner()
-	a := sc.readInt()
-	b := sc.readInt()
-	c := sc.readInt()
-	dp := make([][][]float64, 110)
-	for i := 0; i < 110; i++ {
-		tmp1 := make([][]float64, 110)
-		for j := 0; j < 110; j++ {
-			tmp2 := make([]float64, 110)
-			tmp1[j] = tmp2
-		}
-		dp[i] = tmp1
+	n := sc.readInt()
+	h := getNums(sc, n)
+	dp := make([]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = math.MaxInt32
 	}
-	for i := 99; i >= 0; i-- {
-		for j := 99; j >= 0; j-- {
-			for k := 99; k >= 0; k-- {
-				if i == 0 && j == 0 && k == 0 {
-					continue
-				}
-				dp[i][j][k] = ((1 + dp[i+1][j][k]) * (float64(i) / float64(i+j+k))) + ((1 + dp[i][j+1][k]) * (float64(j) / float64((i + j + k)))) + ((1 + dp[i][j][k+1]) * (float64(k) / float64((i + j + k))))
-			}
-		}
+	dp[0] = 0
+	dp[1] = dp[0] + abs(h[0]-h[1])
+	for i := 2; i < n; i++ {
+		dp[i] = min(dp[i], dp[i-1]+abs(h[i-1]-h[i]), dp[i-2]+abs(h[i-2]-h[i]))
 	}
-	fmt.Println(dp[a][b][c])
+	fmt.Println(dp[n-1])
 }
 
 /*

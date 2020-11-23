@@ -8,74 +8,80 @@ import (
 	"strconv"
 )
 
+type hw struct {
+	h int
+	w int
+}
+
+var h, w int
+var c hw
+var d hw
+var s [][]bool
+var r [][]bool
+
+type que []hw
+
+func (q *que) enqueue(i hw) {
+	*q = append(*q, i)
+}
+
+func (q *que) dequeue() hw {
+	result := (*q)[0]
+	*q = (*q)[1:]
+	return result
+}
+
 func main() {
 	sc := newScanner()
-	a := sc.readInt()
-	b := sc.readInt()
-	c := sc.readInt()
-	dp := make([][][]float64, 110)
-	for i := 0; i < 110; i++ {
-		tmp1 := make([][]float64, 110)
-		for j := 0; j < 110; j++ {
-			tmp2 := make([]float64, 110)
-			tmp1[j] = tmp2
-		}
-		dp[i] = tmp1
-	}
-	for i := 99; i >= 0; i-- {
-		for j := 99; j >= 0; j-- {
-			for k := 99; k >= 0; k-- {
-				if i == 0 && j == 0 && k == 0 {
-					continue
-				}
-				dp[i][j][k] = ((1 + dp[i+1][j][k]) * (float64(i) / float64(i+j+k))) + ((1 + dp[i][j+1][k]) * (float64(j) / float64((i + j + k)))) + ((1 + dp[i][j][k+1]) * (float64(k) / float64((i + j + k))))
+	h := sc.readInt()
+	w := sc.readInt()
+	c1 := sc.readInt()
+	c2 := sc.readInt()
+	d1 := sc.readInt()
+	d2 := sc.readInt()
+	c = hw{c1, c2}
+	d = hw{d1, d2}
+	s = make([][]bool, h)
+	for i := 0; i < h; i++ {
+		var ss = make([]bool, w)
+		str := sc.readString()
+		strs := getStringSlice(str)
+		for j := range strs {
+			if strs[j] == "." {
+				ss[j] = true
 			}
 		}
+		s[i] = ss
 	}
-	fmt.Println(dp[a][b][c])
+	r = make([][]bool, h)
+	for i := 0; i < h; i++ {
+		rr := make([]bool, w)
+		r[i] = rr
+	}
+
+	fmt.Println(s)
+}
+
+func bfs(n hw) {
+	var q que
+	q.enqueue(n)
+	for len(q) > 0 {
+		now := q.dequeue()
+		r[now.h][now.w] = true
+		if now.h == d.h && now.w == d.w {
+			fmt.Println("finish")
+		}
+	}
+
 }
 
 /*
 snipet--------------------------------------
 */
 
-// int2次元配列を取得する
-func getNums2div(sc *scanner, h, w int) [][]int {
-	ret := make([][]int, h)
-	for i := 0; i < h; i++ {
-		tmpret := make([]int, w)
-		for j := 0; j < w; j++ {
-			a := sc.readInt()
-			tmpret[j] = a
-		}
-		ret[i] = tmpret
-	}
-	return ret
-}
-
-// string2次元配列を取得する
-func getStrs2div(sc *scanner, h, w int) [][]string {
-	ret := make([][]string, h)
-	for i := 0; i < h; i++ {
-		tmp := sc.readString()
-		tmpret := getStringSlice(tmp)
-		ret[i] = tmpret
-	}
-	return ret
-}
-
 // int配列で取得
 func getNums(sc *scanner, len int) (nums []int) {
 	var a = make([]int, len)
-	for i := 0; i < len; i++ {
-		a[i] = sc.readInt()
-	}
-	return a
-}
-
-// int配列で取得(Cap指定_dpのときなどで使う)
-func getNumsCap(sc *scanner, len, cap int) (nums []int) {
-	var a = make([]int, len, cap)
 	for i := 0; i < len; i++ {
 		a[i] = sc.readInt()
 	}
@@ -213,36 +219,6 @@ func upperBound(array []int, target int) int {
 		}
 	}
 	return low
-}
-
-func min(nums ...int) int {
-	ret := nums[0]
-	for i := 0; i < len(nums); i++ {
-		if nums[i] < ret {
-			ret = nums[i]
-		}
-	}
-	return ret
-}
-
-func max(nums ...int) int {
-	ret := nums[0]
-	for i := 0; i < len(nums); i++ {
-		if nums[i] > ret {
-			ret = nums[i]
-		}
-	}
-	return ret
-}
-
-// アドレスで渡す必要があるんか。。。
-func chmin(pa, pb *int) bool {
-	a, b := *pa, *pb
-	if a > b {
-		*pa = *pb
-		return true
-	}
-	return false
 }
 
 // mod

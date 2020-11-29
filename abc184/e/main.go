@@ -8,87 +8,31 @@ import (
 	"strconv"
 )
 
-// ac
-
-var h, w, n int
-var s [][]string
-var d [][]int
-var start hw
-var tgts []hw
-
 func main() {
 	sc := newScanner()
-	h = sc.readInt()
-	w = sc.readInt()
-	n = sc.readInt()
-	s = getStrs2div(sc, h, w)
-	d = make([][]int, h)
-	for i := range d {
-		dd := make([]int, w)
-		for j := range dd {
-			dd[j] = math.MaxInt32
+	a := sc.readInt()
+	b := sc.readInt()
+	c := sc.readInt()
+	dp := make([][][]float64, 110)
+	for i := 0; i < 110; i++ {
+		tmp1 := make([][]float64, 110)
+		for j := 0; j < 110; j++ {
+			tmp2 := make([]float64, 110)
+			tmp1[j] = tmp2
 		}
-		d[i] = dd
+		dp[i] = tmp1
 	}
-	tgts = make([]hw, n)
-
-	// get start and goal and tgts
-	for i := range s {
-		for j := range s[i] {
-			if s[i][j] == "S" {
-				start = hw{i, j}
-			} else if s[i][j] != "." && s[i][j] != "X" {
-				a, _ := strconv.Atoi(s[i][j])
-				tgts[a-1] = hw{i, j}
+	for i := 99; i >= 0; i-- {
+		for j := 99; j >= 0; j-- {
+			for k := 99; k >= 0; k-- {
+				if i == 0 && j == 0 && k == 0 {
+					continue
+				}
+				dp[i][j][k] = ((1 + dp[i+1][j][k]) * (float64(i) / float64(i+j+k))) + ((1 + dp[i][j+1][k]) * (float64(j) / float64((i + j + k)))) + ((1 + dp[i][j][k+1]) * (float64(k) / float64((i + j + k))))
 			}
 		}
 	}
-	var q que
-	q.enqueue(start)
-	d[start.h][start.w] = 0
-	var tgt = 1
-	for len(q) > 0 {
-		now := q.dequeue()
-		if s[now.h][now.w] != "S" && s[now.h][now.w] != "." {
-			nn, _ := strconv.Atoi(s[now.h][now.w])
-			if nn == tgt {
-				if tgt == n {
-					fmt.Println(d[now.h][now.w])
-					break
-				}
-				// reset
-				tgt++
-				q = q[:0]
-				for i := range d {
-					dd := make([]int, w)
-					for j := range dd {
-						if i == now.h && j == now.w {
-							dd[j] = d[i][j]
-							continue
-						}
-						dd[j] = math.MaxInt32
-					}
-					d[i] = dd
-				}
-			}
-		}
-		if now.h != 0 && s[now.h-1][now.w] != "X" && d[now.h-1][now.w] == math.MaxInt32 {
-			d[now.h-1][now.w] = d[now.h][now.w] + 1
-			q.enqueue(hw{now.h - 1, now.w})
-		}
-		if now.h != h-1 && s[now.h+1][now.w] != "X" && d[now.h+1][now.w] == math.MaxInt32 {
-			d[now.h+1][now.w] = d[now.h][now.w] + 1
-			q.enqueue(hw{now.h + 1, now.w})
-		}
-		if now.w != 0 && s[now.h][now.w-1] != "X" && d[now.h][now.w-1] == math.MaxInt32 {
-			d[now.h][now.w-1] = d[now.h][now.w] + 1
-			q.enqueue(hw{now.h, now.w - 1})
-		}
-		if now.w != w-1 && s[now.h][now.w+1] != "X" && d[now.h][now.w+1] == math.MaxInt32 {
-			d[now.h][now.w+1] = d[now.h][now.w] + 1
-			q.enqueue(hw{now.h, now.w + 1})
-		}
-	}
+	fmt.Println(dp[a][b][c])
 }
 
 /*
@@ -215,24 +159,6 @@ func gcd(a, b int64) int64 {
 		return a
 	}
 	return gcd(b, a%b)
-}
-
-// que
-type hw struct {
-	h int
-	w int
-}
-
-type que []hw
-
-func (q *que) enqueue(i hw) {
-	*q = append(*q, i)
-}
-
-func (q *que) dequeue() hw {
-	result := (*q)[0]
-	*q = (*q)[1:]
-	return result
 }
 
 // binary_search

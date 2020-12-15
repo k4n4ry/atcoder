@@ -389,6 +389,7 @@ func (sc *scanner) readUint64() uint64 {
 }
 
 // unionfind
+
 type UnionFind struct {
 	n   int
 	par []int

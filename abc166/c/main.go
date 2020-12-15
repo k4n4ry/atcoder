@@ -12,30 +12,27 @@ import (
 
 func main() {
 	sc := newScanner()
-	s := sc.readString()
-	oddmp := make(map[int]int)
-	d := 1
-	var num int
-	for i := len(s); i >= 0; i-- {
-		if i == len(s) {
-			oddmp[0]++
-			continue
-		}
-		tmps := s[i]
-		tmpn, _ := strconv.Atoi(string(tmps))
-		num += tmpn * d
-		num %= 2019
-		oddmp[num]++
-		d *= 10
-		d %= 2019
+	n := sc.readInt()
+	m := sc.readInt()
+	h := make([]int, n+1)
+	for i := 1; i < n+1; i++ {
+		h[i] = sc.readInt()
 	}
-	var ans int
-	for _, v := range oddmp {
-		if v > 1 {
-			ans += v * (v - 1) / 2
+	ms := make([]int, n+1)
+	for i := 0; i < m; i++ {
+		a := sc.readInt()
+		b := sc.readInt()
+		ms[a] = max(ms[a], h[b])
+		ms[b] = max(ms[b], h[a])
+	}
+
+	var cnt int
+	for i := 1; i < n+1; i++ {
+		if ms[i] < h[i] || ms[i] == 0 {
+			cnt++
 		}
 	}
-	fmt.Println(ans)
+	fmt.Println(cnt)
 }
 
 /*
@@ -99,17 +96,6 @@ func getStringSlice(s string) []string {
 	var cs = make([]string, len(s))
 	for i, c := range s {
 		cs[i] = string(c)
-	}
-	return cs
-}
-
-// stringを1文字ずつの数値に変換
-func getIntSliceFromString(s string) []int {
-	var cs = make([]int, len(s))
-	for i, c := range s {
-		ss := string(c)
-		nt, _ := strconv.Atoi(ss)
-		cs[i] = nt
 	}
 	return cs
 }
@@ -389,6 +375,7 @@ func (sc *scanner) readUint64() uint64 {
 }
 
 // unionfind
+
 type UnionFind struct {
 	n   int
 	par []int

@@ -5,34 +5,50 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"sort"
 	"strconv"
 )
 
-// ac
-
 func main() {
 	sc := newScanner()
-	s := sc.readString()
-	oddmp := make(map[int]int)
-	d := 1
-	var num int
-	for i := len(s); i >= 0; i-- {
-		if i == len(s) {
-			oddmp[0]++
+	n := sc.readInt()
+	m := sc.readInt()
+	a := getNums(sc, m)
+	sort.SliceStable(a, func(i, j int) bool {
+		return a[i] < a[j]
+	})
+	if m == 0 {
+		fmt.Println("1")
+		os.Exit(0)
+	}
+	var step []int
+	var size int = math.MaxInt32
+	if a[0] != 1 {
+		step = append(step, a[0]-1)
+		size = a[0] - 1
+	}
+	for i := 1; i < len(a); i++ {
+		var tmp = a[i] - a[i-1] - 1
+		if tmp == 0 {
 			continue
 		}
-		tmps := s[i]
-		tmpn, _ := strconv.Atoi(string(tmps))
-		num += tmpn * d
-		num %= 2019
-		oddmp[num]++
-		d *= 10
-		d %= 2019
+		step = append(step, a[i]-a[i-1]-1)
+		size = min(size, a[i]-a[i-1]-1)
+	}
+	if a[len(a)-1] != n {
+		step = append(step, n-a[len(a)-1])
+		size = min(size, n-a[len(a)-1])
 	}
 	var ans int
-	for _, v := range oddmp {
-		if v > 1 {
-			ans += v * (v - 1) / 2
+	if size == 0 {
+		fmt.Println("0")
+		os.Exit(0)
+	}
+	for i := 0; i < len(step); i++ {
+		if step[i]%size == 0 {
+			ans += step[i] / size
+		} else {
+			ans += step[i]/size + 1
 		}
 	}
 	fmt.Println(ans)

@@ -47,7 +47,7 @@ func (uf UnionFind) unite(x, y int) {
 		if uf.size(rx) > uf.size(ry) {
 			rx, ry = ry, rx
 		}
-		// rxの値をryに付与する
+		// rxの値をryに付与する(サイズ計算のため。ryが2とか3で、par[ry]が-(ノードの数)なので、)
 		uf.par[ry] += uf.par[rx]
 		// rxがryにぶら下がる
 		uf.par[rx] = ry

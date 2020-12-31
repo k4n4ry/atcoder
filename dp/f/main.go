@@ -8,35 +8,43 @@ import (
 	"strconv"
 )
 
-// ac
-
 func main() {
 	sc := newScanner()
-	t := sc.readInt()
-	var anses []int
-	for i := 0; i < t; i++ {
-		n := sc.readInt()
-		s := sc.readInt()
-		k := sc.readInt()
-		g := gcd(k, n)
-		if s%g != 0 {
-			anses = append(anses, -1)
-			continue
+	s := sc.readString()
+	t := sc.readString()
+	dp := make([][]int, 3010)
+	for i := 0; i < len(dp); i++ {
+		tmp := make([]int, 3010)
+		dp[i] = tmp
+	}
+	for i := 0; i < len(s); i++ {
+		for j := 0; j < len(t); j++ {
+			if s[i] == t[j] {
+				dp[i+1][j+1] = dp[i][j] + 1
+			} else {
+				dp[i+1][j+1] = max(dp[i][j+1], dp[i+1][j])
+			}
 		}
-		n /= g
-		s /= g
-		k /= g
+	}
+	i := len(s)
+	j := len(t)
+	var ans string
+	for {
+		if i == 0 || j == 0 {
+			break
+		}
+		if dp[i][j] == dp[i-1][j] {
+			i--
+		} else if dp[i][j] == dp[i][j-1] {
+			j--
+		} else {
+			ans += string(s[i-1])
+			i--
+			j--
+		}
+	}
+	fmt.Println(rev(ans))
 
-		m := newModInt(int64(-s), int64(n))
-		m.div(int64(k))
-		if m.x < 0 {
-			m.add(int64(n))
-		}
-		anses = append(anses, int(m.x))
-	}
-	for i := 0; i < t; i++ {
-		fmt.Println(anses[i])
-	}
 }
 
 /*
@@ -169,7 +177,7 @@ func pow(p, q int) int {
 	return int(math.Pow(float64(p), float64(q)))
 }
 
-func gcd(a, b int) int {
+func gcd(a, b int64) int64 {
 	if b == 0 {
 		return a
 	}
@@ -268,14 +276,16 @@ func max(nums ...int) int {
 	return ret
 }
 
-// アドレスで渡す必要があるんか。。。
-func chmin(pa, pb *int) bool {
-	a, b := *pa, *pb
-	if a > b {
-		*pa = *pb
-		return true
+// 文字列逆転
+func rev(s string) string {
+
+	runes := []rune(s)
+
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
 	}
-	return false
+
+	return string(runes)
 }
 
 // mod
@@ -313,7 +323,7 @@ func (m *modInt) mul(n int64) *modInt {
 	return m
 }
 
-// 商, uが逆元
+// 商
 func (m *modInt) div(n int64) *modInt {
 	var a, b int64 = n, m.modVal
 	var u, v int64 = 1, 0
@@ -330,24 +340,6 @@ func (m *modInt) div(n int64) *modInt {
 	u %= m.modVal
 	m.x = (m.x * u) % m.modVal
 	return m
-}
-
-// nの逆元を取得する
-func moddiv(n, modVal int) int {
-	var a, b int = n, modVal
-	var u, v int = 1, 0
-	for b > 0 {
-		t := a / b
-		a -= t * b
-		a, b = b, a
-		u -= t * v
-		u, v = v, u
-	}
-	if u < 0 {
-		u += modVal
-	}
-	u %= modVal
-	return u
 }
 
 /*

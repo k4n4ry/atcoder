@@ -8,35 +8,35 @@ import (
 	"strconv"
 )
 
-// ac
-
 func main() {
 	sc := newScanner()
-	t := sc.readInt()
-	var anses []int
-	for i := 0; i < t; i++ {
-		n := sc.readInt()
-		s := sc.readInt()
-		k := sc.readInt()
-		g := gcd(k, n)
-		if s%g != 0 {
-			anses = append(anses, -1)
-			continue
+	n := sc.readInt()
+	m := sc.readInt()
+	a := getNums(sc, n)
+	b := getNums(sc, m)
+	dp := make([][]int, 1010)
+	for i := 0; i < len(dp); i++ {
+		tmp := make([]int, 1010)
+		for j := 0; j < len(tmp); j++ {
+			tmp[j] = math.MaxInt32
 		}
-		n /= g
-		s /= g
-		k /= g
+		dp[i] = tmp
+	}
+	for i := 0; i < len(dp); i++ {
+		dp[i][0] = i
+		dp[0][i] = i
+	}
+	for i := 0; i < n; i++ {
+		for j := 0; j < m; j++ {
+			if a[i] == b[j] {
+				dp[i+1][j+1] = min(dp[i][j], dp[i][j+1]+1, dp[i+1][j]+1)
+			} else {
+				dp[i+1][j+1] = min(dp[i][j]+1, dp[i][j+1]+1, dp[i+1][j]+1)
+			}
+		}
+	}
+	fmt.Println(dp[n][m])
 
-		m := newModInt(int64(-s), int64(n))
-		m.div(int64(k))
-		if m.x < 0 {
-			m.add(int64(n))
-		}
-		anses = append(anses, int(m.x))
-	}
-	for i := 0; i < t; i++ {
-		fmt.Println(anses[i])
-	}
 }
 
 /*
@@ -169,7 +169,7 @@ func pow(p, q int) int {
 	return int(math.Pow(float64(p), float64(q)))
 }
 
-func gcd(a, b int) int {
+func gcd(a, b int64) int64 {
 	if b == 0 {
 		return a
 	}
@@ -313,7 +313,7 @@ func (m *modInt) mul(n int64) *modInt {
 	return m
 }
 
-// 商, uが逆元
+// 商
 func (m *modInt) div(n int64) *modInt {
 	var a, b int64 = n, m.modVal
 	var u, v int64 = 1, 0
@@ -330,24 +330,6 @@ func (m *modInt) div(n int64) *modInt {
 	u %= m.modVal
 	m.x = (m.x * u) % m.modVal
 	return m
-}
-
-// nの逆元を取得する
-func moddiv(n, modVal int) int {
-	var a, b int = n, modVal
-	var u, v int = 1, 0
-	for b > 0 {
-		t := a / b
-		a -= t * b
-		a, b = b, a
-		u -= t * v
-		u, v = v, u
-	}
-	if u < 0 {
-		u += modVal
-	}
-	u %= modVal
-	return u
 }
 
 /*

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -15,75 +16,53 @@ type ab struct {
 
 func main() {
 	sc := newScanner()
-	h := sc.readInt()
-	w := sc.readInt()
 	n := sc.readInt()
 	m := sc.readInt()
-	var isH = make([][]int, h)
-	var isW = make([][]int, h)
-	for i := 0; i < h; i++ {
-		var tmp = make([]int, w)
-		var tmp2 = make([]int, w)
-		isH[i] = tmp
-		isW[i] = tmp2
-	}
-	var abs = make([]ab, n)
-	for i := 0; i < n; i++ {
-		a := sc.readInt() - 1
-		b := sc.readInt() - 1
-		abs[i] = ab{a, b}
-	}
-	for i := 0; i < m; i++ {
-		c := sc.readInt() - 1
-		d := sc.readInt() - 1
-		isH[c][d] = 9
-		isW[c][d] = 9
-	}
-	for i := 0; i < len(abs); i++ {
-		ab := abs[i]
-		if isH[ab.a][ab.b] != 0 {
-			continue
+	h := getNums(sc, n)
+	w := getNums(sc, m)
+	sort.SliceStable(h, func(i, j int) bool {
+		return h[i] < h[j]
+	})
+	var left = make([]int, n/2+1)
+	var right = make([]int, n/2+1)
+	var lftC, rgtC int = 1, 1
+	for i := 0; i < n-1; i += 2 {
+		if lftC == 1 {
+			left[lftC] = abs(h[i] - h[i+1])
+		} else {
+			left[lftC] = left[lftC-1] + abs(h[i]-h[i+1])
 		}
-		for j := ab.b; j < w; j++ {
-			if isH[ab.a][j] == 9 {
-				break
+		lftC++
+	}
+	for i := n - 1; i > 0; i -= 2 {
+		if rgtC == 1 {
+			right[rgtC] = abs(h[i] - h[i-1])
+		} else {
+			right[rgtC] = right[rgtC-1] + abs(h[i]-h[i-1])
+		}
+		rgtC++
+	}
+	var ans int = math.MaxInt32
+	for i := 0; i < len(w); i++ {
+		var val = w[i]
+		idx := sort.Search(len(h), func(i int) bool { return h[i] >= val })
+		if idx%2 == 0 {
+			lCnt := idx
+			rCnt := n + 1 - lCnt - 2
+			tmp := left[lCnt/2] + right[rCnt/2] + abs(w[i]-h[idx])
+			if tmp < ans {
+				ans = tmp
 			}
-			isH[ab.a][j] = 1
-		}
-		for j := ab.b; j >= 0; j-- {
-			if isH[ab.a][j] == 9 {
-				break
-			}
-			isH[ab.a][j] = 1
-		}
-	}
-	for i := 0; i < len(abs); i++ {
-		ab := abs[i]
-		if isW[ab.a][ab.b] != 0 {
-			continue
-		}
-		for j := ab.a; j < h; j++ {
-			if isW[j][ab.b] == 9 {
-				break
-			}
-			isW[j][ab.b] = 1
-		}
-		for j := ab.a; j >= 0; j-- {
-			if isW[j][ab.b] == 9 {
-				break
-			}
-			isW[j][ab.b] = 1
-		}
-	}
-	var cnt int
-	for i := 0; i < h; i++ {
-		for j := 0; j < w; j++ {
-			if isH[i][j] == 1 || isW[i][j] == 1 {
-				cnt++
+		} else {
+			lCnt := idx - 1
+			rCnt := n + 1 - lCnt - 2
+			tmp := left[lCnt/2] + right[rCnt/2] + abs(w[i]-h[idx-1])
+			if tmp < ans {
+				ans = tmp
 			}
 		}
 	}
-	fmt.Println(cnt)
+	fmt.Println(ans)
 
 }
 

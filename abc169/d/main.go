@@ -8,82 +8,30 @@ import (
 	"strconv"
 )
 
-type ab struct {
-	a int
-	b int
-}
-
 func main() {
 	sc := newScanner()
-	h := sc.readInt()
-	w := sc.readInt()
 	n := sc.readInt()
-	m := sc.readInt()
-	var isH = make([][]int, h)
-	var isW = make([][]int, h)
-	for i := 0; i < h; i++ {
-		var tmp = make([]int, w)
-		var tmp2 = make([]int, w)
-		isH[i] = tmp
-		isW[i] = tmp2
+	ns := getPrimeFactors(n)
+	var mp = make(map[int]int)
+	for i := range ns {
+		mp[ns[i]]++
 	}
-	var abs = make([]ab, n)
-	for i := 0; i < n; i++ {
-		a := sc.readInt() - 1
-		b := sc.readInt() - 1
-		abs[i] = ab{a, b}
+
+	var tris []int
+	var tri int
+	for i := 1; i < 100; i++ {
+		tri += i
+		tris = append(tris, tri)
 	}
-	for i := 0; i < m; i++ {
-		c := sc.readInt() - 1
-		d := sc.readInt() - 1
-		isH[c][d] = 9
-		isW[c][d] = 9
-	}
-	for i := 0; i < len(abs); i++ {
-		ab := abs[i]
-		if isH[ab.a][ab.b] != 0 {
-			continue
-		}
-		for j := ab.b; j < w; j++ {
-			if isH[ab.a][j] == 9 {
-				break
-			}
-			isH[ab.a][j] = 1
-		}
-		for j := ab.b; j >= 0; j-- {
-			if isH[ab.a][j] == 9 {
-				break
-			}
-			isH[ab.a][j] = 1
-		}
-	}
-	for i := 0; i < len(abs); i++ {
-		ab := abs[i]
-		if isW[ab.a][ab.b] != 0 {
-			continue
-		}
-		for j := ab.a; j < h; j++ {
-			if isW[j][ab.b] == 9 {
-				break
-			}
-			isW[j][ab.b] = 1
-		}
-		for j := ab.a; j >= 0; j-- {
-			if isW[j][ab.b] == 9 {
-				break
-			}
-			isW[j][ab.b] = 1
-		}
-	}
-	var cnt int
-	for i := 0; i < h; i++ {
-		for j := 0; j < w; j++ {
-			if isH[i][j] == 1 || isW[i][j] == 1 {
-				cnt++
+	var ans int
+	for _, v := range mp {
+		for i := 1; i < len(tris); i++ {
+			if tris[i-1] <= v && v < tris[i] {
+				ans += i
 			}
 		}
 	}
-	fmt.Println(cnt)
+	fmt.Println(ans)
 
 }
 

@@ -11,25 +11,36 @@ import (
 func main() {
 	sc := newScanner()
 	n := sc.readInt()
-	w := sc.readInt()
-	a := getNums(sc, n)
-	var dp = make([][]bool, n+1)
-	for i := 0; i < n+1; i++ {
-		tmp := make([]bool, 20)
-		dp[i] = tmp
-	}
-	dp[0][0] = true
+	k := sc.readInt()
+	var mp = make(map[int]int)
 	for i := 0; i < n; i++ {
-		for j := 0; j < len(a); j++ {
-			if dp[i][j] {
-				dp[i+1][j] = true
-				dp[i][j+a[i]] = true
-			}
-		}
+		a := sc.readInt()
+		mp[a]++
 	}
-	fmt.Println(dp)
-	fmt.Println(w)
-
+	var ans, now int
+	for i := 0; i < n; i++ {
+		if mp[i] == 0 {
+			break
+		}
+		if i == 0 {
+			if mp[0] >= k {
+				ans += k
+				now = k
+			} else {
+				ans += mp[0]
+				now = mp[0]
+			}
+			continue
+		}
+		if mp[i] > k {
+			mp[i] = k
+		}
+		if mp[i] < now {
+			now = mp[i]
+		}
+		ans += now
+	}
+	fmt.Println(ans)
 }
 
 /*

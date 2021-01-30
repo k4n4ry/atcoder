@@ -10,26 +10,25 @@ import (
 
 func main() {
 	sc := newScanner()
-	n := sc.readInt()
-	w := sc.readInt()
-	a := getNums(sc, n)
-	var dp = make([][]bool, n+1)
-	for i := 0; i < n+1; i++ {
-		tmp := make([]bool, 20)
-		dp[i] = tmp
-	}
-	dp[0][0] = true
-	for i := 0; i < n; i++ {
-		for j := 0; j < len(a); j++ {
-			if dp[i][j] {
-				dp[i+1][j] = true
-				dp[i][j+a[i]] = true
-			}
-		}
-	}
-	fmt.Println(dp)
-	fmt.Println(w)
+	x := sc.readInt()
+	k := sc.readInt()
+	d := sc.readInt()
 
+	if x < 0 {
+		x = x * (-1)
+	}
+	s := x / d
+	if k <= s {
+		fmt.Println(x - k*d)
+		os.Exit(0)
+	}
+	p1 := x - s*d
+	p2 := abs(x - (s+1)*d)
+	if (k-s)%2 == 1 {
+		fmt.Println(p2)
+	} else {
+		fmt.Println(p1)
+	}
 }
 
 /*

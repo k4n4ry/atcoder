@@ -8,27 +8,65 @@ import (
 	"strconv"
 )
 
+type edge struct {
+	to int
+	w  int
+}
+
 func main() {
 	sc := newScanner()
-	n := sc.readInt()
-	w := sc.readInt()
-	a := getNums(sc, n)
-	var dp = make([][]bool, n+1)
-	for i := 0; i < n+1; i++ {
-		tmp := make([]bool, 20)
-		dp[i] = tmp
+	a := sc.readInt()
+	b := sc.readInt()
+	x := sc.readInt()
+	y := sc.readInt()
+	g := make([][]edge, 200)
+	ma := math.MaxInt16
+	// A
+	for i := 0; i < 100; i++ {
+		var edges []edge
+		if i == 0 {
+			edges = []edge{{1, y}, {100, x}}
+		} else if i == 99 {
+			edges = []edge{{98, y}, {199, x}, {198, x}}
+		} else {
+			edges = []edge{{i + 1, y}, {i - 1, y}, {i + 100, x}, {i + 99, x}}
+		}
+		g[i] = edges
 	}
-	dp[0][0] = true
-	for i := 0; i < n; i++ {
-		for j := 0; j < len(a); j++ {
-			if dp[i][j] {
-				dp[i+1][j] = true
-				dp[i][j+a[i]] = true
+	for i := 100; i < 200; i++ {
+		var edges []edge
+		if i == 100 {
+			edges = []edge{{101, y}, {0, x}, {1, x}}
+		} else if i == 199 {
+			edges = []edge{{198, y}, {99, x}}
+		} else {
+			edges = []edge{{i + 1, y}, {i - 1, y}, {i - 100, x}, {i - 99, x}}
+		}
+		g[i] = edges
+	}
+	var nd = make([]int, 200)
+	for i := 0; i < len(nd); i++ {
+		nd[i] = ma
+	}
+	st := a - 1
+	gl := b + 99
+	nd[st] = 0
+	// ベルマンフォードの試行セット数(頂点数)
+	for i := 0; i < 200; i++ {
+		// 各セットで、各ノードごとに見ていく
+		for j := 0; j < 200; j++ {
+			// まだ緩和されていないノードはskip
+			if nd[j] == ma {
+				continue
+			}
+			// 各ノードから出ているエッジの数だけ
+			for _, edge := range g[j] {
+				// 緩和する
+				nd[edge.to] = min(nd[edge.to], nd[j]+edge.w)
 			}
 		}
 	}
-	fmt.Println(dp)
-	fmt.Println(w)
+	fmt.Println(nd[gl])
 
 }
 

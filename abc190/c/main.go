@@ -11,24 +11,45 @@ import (
 func main() {
 	sc := newScanner()
 	n := sc.readInt()
-	w := sc.readInt()
-	a := getNums(sc, n)
-	var dp = make([][]bool, n+1)
-	for i := 0; i < n+1; i++ {
-		tmp := make([]bool, 20)
-		dp[i] = tmp
+	m := sc.readInt()
+	var a = make([]int, m)
+	var b = make([]int, m)
+	for i := 0; i < m; i++ {
+		ta := sc.readInt()
+		tb := sc.readInt()
+		a[i] = ta
+		b[i] = tb
 	}
-	dp[0][0] = true
-	for i := 0; i < n; i++ {
-		for j := 0; j < len(a); j++ {
-			if dp[i][j] {
-				dp[i+1][j] = true
-				dp[i][j+a[i]] = true
+	k := sc.readInt()
+	var c = make([]int, k)
+	var d = make([]int, k)
+	for i := 0; i < k; i++ {
+		ta := sc.readInt()
+		tb := sc.readInt()
+		c[i] = ta
+		d[i] = tb
+	}
+	var max int
+	for bits := 0; bits < (1 << uint64(k)); bits++ {
+		var sar = make([]bool, n+1)
+		for i := 0; i < k; i++ {
+			if (bits>>uint64(i))&1 == 1 {
+				sar[c[i]] = true
+			} else {
+				sar[d[i]] = true
 			}
 		}
+		var tmp int
+		for i := 0; i < m; i++ {
+			if sar[a[i]] && sar[b[i]] {
+				tmp++
+			}
+		}
+		if tmp > max {
+			max = tmp
+		}
 	}
-	fmt.Println(dp)
-	fmt.Println(w)
+	fmt.Println(max)
 
 }
 

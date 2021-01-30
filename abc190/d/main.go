@@ -11,24 +11,43 @@ import (
 func main() {
 	sc := newScanner()
 	n := sc.readInt()
-	w := sc.readInt()
-	a := getNums(sc, n)
-	var dp = make([][]bool, n+1)
-	for i := 0; i < n+1; i++ {
-		tmp := make([]bool, 20)
-		dp[i] = tmp
+	var cnt int
+	if n == 1 {
+		fmt.Println("2")
+		os.Exit(0)
 	}
-	dp[0][0] = true
-	for i := 0; i < n; i++ {
-		for j := 0; j < len(a); j++ {
-			if dp[i][j] {
-				dp[i+1][j] = true
-				dp[i][j+a[i]] = true
+	// sq := int(math.Sqrt(float64(n)))
+	var flga, flgb bool
+	for i := 1; i < n+1; i++ {
+		if i == 1 {
+			cnt += 2
+			continue
+		}
+		if i%2 == 0 {
+			if n%i == i/2 && n/i >= n%i {
+				cnt += 2
+			}
+			if !(n/i >= n%i) {
+				flga = true
+			}
+		} else {
+			if n%i == 0 && (i/2)+1 <= n/i {
+				cnt += 2
+			}
+			if !((i/2)+1 <= n/i) {
+				flgb = true
 			}
 		}
+		if flga && flgb {
+			break
+		}
+		// if n/i < n%i {
+		// 	fmt.Println("out", i)
+		// 	break
+		// }
+
 	}
-	fmt.Println(dp)
-	fmt.Println(w)
+	fmt.Println(cnt)
 
 }
 

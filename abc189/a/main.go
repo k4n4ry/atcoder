@@ -2,34 +2,74 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"math"
 	"os"
 	"strconv"
 )
 
+type xy struct {
+	x int
+	y int
+}
+
 func main() {
 	sc := newScanner()
 	n := sc.readInt()
-	w := sc.readInt()
-	a := getNums(sc, n)
-	var dp = make([][]bool, n+1)
-	for i := 0; i < n+1; i++ {
-		tmp := make([]bool, 20)
-		dp[i] = tmp
-	}
-	dp[0][0] = true
+	var xys = make([]xy, n)
 	for i := 0; i < n; i++ {
-		for j := 0; j < len(a); j++ {
-			if dp[i][j] {
-				dp[i+1][j] = true
-				dp[i][j+a[i]] = true
-			}
+		x := sc.readInt()
+		y := sc.readInt()
+		xys[i] = xy{x, y}
+	}
+	m := sc.readInt()
+	var ms = make([][]int, m)
+	for i := 0; i < m; i++ {
+		tmp1 := sc.readInt()
+		if tmp1 == 1 || tmp1 == 3 {
+			var tmps = make([]int, 2)
+			tmp2 := sc.readInt()
+			tmps[0] = tmp1
+			tmps[1] = tmp2
+			ms[i] = tmps
+		} else {
+			ms[i] = []int{tmp1}
 		}
 	}
-	fmt.Println(dp)
-	fmt.Println(w)
+	q := sc.readInt()
+	type ab struct {
+		a int
+		b int
+	}
+	var abs = make([]ab, q)
+	for i := 0; i < q; i++ {
+		a := sc.readInt()
+		b := sc.readInt()
+		abs[i] = ab{a, b}
+	}
+	var mp = make(map[int][]xy)
+	mp[0] = xys
+	for i := 0; i < m; i++ {
+		switch ms[i][0] {
+		case 1:
+			for i := range xys {
+				if xys[i].x > 0 {
+					xys[i] = xy{xys[i].y, -xys[i].x}
+				} else {
+					xys[i] = xy{-xys[i].y, xys[i].x}
+				}
+			}
+		case 2:
+			for i := range xys {
+				if xys[i].x < 0 {
+					xys[i] = xy{xys[i].y, -xys[i].x}
+				} else {
+					xys[i] = xy{-xys[i].y, xys[i].x}
+				}
+			}
+		case 3:
 
+		}
+	}
 }
 
 /*

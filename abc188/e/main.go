@@ -11,25 +11,35 @@ import (
 func main() {
 	sc := newScanner()
 	n := sc.readInt()
-	w := sc.readInt()
-	a := getNums(sc, n)
-	var dp = make([][]bool, n+1)
-	for i := 0; i < n+1; i++ {
-		tmp := make([]bool, 20)
-		dp[i] = tmp
+	m := sc.readInt()
+	var a = make([]int, n+1)
+	for i := 1; i < n+1; i++ {
+		tmp := sc.readInt()
+		a[i] = tmp
 	}
-	dp[0][0] = true
-	for i := 0; i < n; i++ {
-		for j := 0; j < len(a); j++ {
-			if dp[i][j] {
-				dp[i+1][j] = true
-				dp[i][j+a[i]] = true
-			}
+	var g = make([][]int, n+1)
+	for i := 0; i < m; i++ {
+		x := sc.readInt()
+		y := sc.readInt()
+		g[x] = append(g[x], y)
+	}
+	var dp = make([]int, n+1)
+	for i := range dp {
+		dp[i] = math.MaxInt32
+	}
+	for i := 1; i < n+1; i++ {
+		for j := 0; j < len(g[i]); j++ {
+			to := g[i][j]
+			dp[to] = min(dp[to], dp[i], a[i])
 		}
 	}
-	fmt.Println(dp)
-	fmt.Println(w)
-
+	var ans int = math.MaxInt32 * -1
+	for i := 1; i < n+1; i++ {
+		if a[i]-dp[i] > ans {
+			ans = a[i] - dp[i]
+		}
+	}
+	fmt.Println(ans)
 }
 
 /*

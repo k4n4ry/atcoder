@@ -8,27 +8,41 @@ import (
 	"strconv"
 )
 
+var MAX = 1000010
+
 func main() {
 	sc := newScanner()
 	n := sc.readInt()
-	w := sc.readInt()
-	a := getNums(sc, n)
-	var dp = make([][]bool, n+1)
-	for i := 0; i < n+1; i++ {
-		tmp := make([]bool, 20)
-		dp[i] = tmp
-	}
-	dp[0][0] = true
+	c := make([]int, 1000010)
+	as := make([]int, n)
 	for i := 0; i < n; i++ {
-		for j := 0; j < len(a); j++ {
-			if dp[i][j] {
-				dp[i+1][j] = true
-				dp[i][j+a[i]] = true
+		a := sc.readInt()
+		c[a]++
+		as[i] = a
+	}
+	var cp = true
+	for i := 2; i < MAX; i++ {
+		var sum int
+		for j := i; j < MAX; j += i {
+			sum += c[j]
+			if sum > 1 {
+				cp = false
 			}
 		}
 	}
-	fmt.Println(dp)
-	fmt.Println(w)
+	if cp {
+		fmt.Println("pairwise coprime")
+		os.Exit(0)
+	}
+	var gc int = as[0]
+	for i := 0; i < len(as)-1; i++ {
+		gc = gcd(gc, as[i+1])
+	}
+	if gc == 1 {
+		fmt.Println("setwise coprime")
+	} else {
+		fmt.Println("not coprime")
+	}
 
 }
 

@@ -10,26 +10,22 @@ import (
 
 func main() {
 	sc := newScanner()
-	n := sc.readInt()
-	w := sc.readInt()
-	a := getNums(sc, n)
-	var dp = make([][]bool, n+1)
-	for i := 0; i < n+1; i++ {
-		tmp := make([]bool, 20)
-		dp[i] = tmp
-	}
-	dp[0][0] = true
-	for i := 0; i < n; i++ {
-		for j := 0; j < len(a); j++ {
-			if dp[i][j] {
-				dp[i+1][j] = true
-				dp[i][j+a[i]] = true
-			}
+	a := sc.readInt()
+	b := sc.readInt()
+	c := sc.readInt()
+
+	if a > b {
+		fmt.Println("Takahashi")
+	} else if b > a {
+		fmt.Println("Aoki")
+	} else {
+		if c == 0 {
+			fmt.Println("Aoki")
+		} else {
+			fmt.Println("Takahashi")
+
 		}
 	}
-	fmt.Println(dp)
-	fmt.Println(w)
-
 }
 
 /*

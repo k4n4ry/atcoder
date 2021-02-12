@@ -2,34 +2,114 @@ package main
 
 import (
 	"bufio"
+	"container/heap"
 	"fmt"
 	"math"
 	"os"
 	"strconv"
 )
 
+type edge struct {
+	to int
+	w  int
+}
+
+// ヒープで管理する要素情報
+type vert struct {
+	d int // 緩和したときのdistの値
+	v int // 緩和対象のノード番号
+}
+
+// ヒープを表現するプライオリティキューcontainer/heapを実装する
+type pQue []vert
+
+func (pq pQue) Len() int            { return len(pq) }
+func (pq pQue) Swap(i, j int)       { pq[i], pq[j] = pq[j], pq[i] }
+func (pq pQue) Less(i, j int) bool  { return pq[i].d < pq[j].d }
+func (pq *pQue) Push(x interface{}) { *pq = append(*pq, x.(vert)) }
+func (pq *pQue) Pop() interface{} {
+	x := (*pq)[len(*pq)-1]
+	*pq = (*pq)[0 : len(*pq)-1]
+	return x
+}
+
 func main() {
 	sc := newScanner()
 	n := sc.readInt()
-	w := sc.readInt()
-	a := getNums(sc, n)
-	var dp = make([][]bool, n+1)
-	for i := 0; i < n+1; i++ {
-		tmp := make([]bool, 20)
-		dp[i] = tmp
+	var d = make([][]int, n)
+	for i := 0; i < len(d); i++ {
+		tmp := make([]int, n)
+		d[i] = tmp
 	}
-	dp[0][0] = true
-	for i := 0; i < n; i++ {
-		for j := 0; j < len(a); j++ {
-			if dp[i][j] {
-				dp[i+1][j] = true
-				dp[i][j+a[i]] = true
+	var g = make([][]edge, n)
+	// 自己ループ辺を管理するスライス
+	var z = make([]int, n)
+	for i := 0; i < len(z); i++ {
+		z[i] = math.MaxInt32
+	}
+	m := sc.readInt()
+	for i := 0; i < m; i++ {
+		a := sc.readInt() - 1
+		b := sc.readInt() - 1
+		c := sc.readInt()
+		// 自己ループの場合、既存と比べて小さい方をzに代入(複数を考慮)
+		if a == b {
+			if c < z[a] {
+				z[a] = c
 			}
 		}
+		// グラフ構造体にappend g[1]->1番目のノードに紐づく辺リスト([]edge)
+		g[a] = append(g[a], edge{to: b, w: c})
 	}
-	fmt.Println(dp)
-	fmt.Println(w)
-
+	// 各街を始点にdijkstra
+	for s := 0; s < n; s++ {
+		var pq pQue
+		// ノード間の距離を管理、大きい数字で初期化
+		var dist = make([]int, n)
+		for i := 0; i < len(dist); i++ {
+			dist[i] = math.MaxInt32
+		}
+		// スタートだけ0で初期化して、初期要素をpqueにpushしてスタート
+		dist[s] = 0
+		heap.Push(&pq, vert{d: dist[s], v: s})
+		for len(pq) > 0 {
+			mn := heap.Pop(&pq).(vert)
+			// 現在のdistより大きいdistは不要なので(更新前)、破棄
+			if mn.d > dist[mn.v] {
+				continue
+			}
+			// 取得したノードに紐づく辺ごとに処理
+			for j := range g[mn.v] {
+				ed := g[mn.v][j]
+				// 緩和によりdistが更新される場合、pqueにpushする
+				if dist[ed.to] > dist[mn.v]+ed.w {
+					dist[ed.to] = dist[mn.v] + ed.w
+					heap.Push(&pq, vert{d: dist[ed.to], v: ed.to})
+				}
+			}
+		}
+		// 街sにおけるdijkstra終了
+		d[s] = dist
+		// 街s->街s場合の値を大きくしておく(自己ループとの比較のため)
+		d[s][s] = math.MaxInt32
+	}
+	var ans = make([]int, n)
+	for i := 0; i < len(ans); i++ {
+		ans[i] = math.MaxInt32
+	}
+	for i := 0; i < n; i++ {
+		for j := 0; j < n; j++ {
+			// 街i->j->iのパターンか、自己ループのうち、小さい方を採用する
+			ans[i] = min(ans[i], d[i][j]+d[j][i], z[i])
+		}
+	}
+	for i := 0; i < n; i++ {
+		if ans[i] == math.MaxInt32 {
+			fmt.Println("-1")
+		} else {
+			fmt.Println(ans[i])
+		}
+	}
 }
 
 /*
@@ -212,6 +292,35 @@ func binarySearch(array []int, target int) int {
 	}
 }
 
+// LowerBound ...
+func lowerBound(array []int, target int) int {
+	low, high, mid := 0, len(array)-1, 0
+	for low <= high {
+		mid = (low + high) / 2
+		if array[mid] >= target {
+			high = mid - 1
+		} else {
+			low = mid + 1
+		}
+	}
+	return low
+}
+
+// UpperBound ...
+func upperBound(array []int, target int) int {
+	low, high, mid := 0, len(array)-1, 0
+
+	for low <= high {
+		mid = (low + high) / 2
+		if array[mid] > target {
+			high = mid - 1
+		} else {
+			low = mid + 1
+		}
+	}
+	return low
+}
+
 func min(nums ...int) int {
 	ret := nums[0]
 	for i := 0; i < len(nums); i++ {
@@ -230,6 +339,16 @@ func max(nums ...int) int {
 		}
 	}
 	return ret
+}
+
+// アドレスで渡す必要があるんか。。。
+func chmin(pa, pb *int) bool {
+	a, b := *pa, *pb
+	if a > b {
+		*pa = *pb
+		return true
+	}
+	return false
 }
 
 // mod
@@ -362,13 +481,13 @@ func (sc *scanner) readUint64() uint64 {
 }
 
 // unionfind
-type unionFind struct {
+type UnionFind struct {
 	n   int
 	par []int
 }
 
-func newUnionFind(n int) *unionFind {
-	uf := new(unionFind)
+func newUnionFind(n int) *UnionFind {
+	uf := new(UnionFind)
 	uf.n = n
 	uf.par = make([]int, n)
 	for i := range uf.par {
@@ -377,7 +496,7 @@ func newUnionFind(n int) *unionFind {
 	return uf
 }
 
-func (uf unionFind) root(x int) int {
+func (uf UnionFind) root(x int) int {
 	if uf.par[x] < 0 {
 		return x
 	}
@@ -386,7 +505,7 @@ func (uf unionFind) root(x int) int {
 	return uf.par[x]
 }
 
-func (uf unionFind) unite(x, y int) {
+func (uf UnionFind) unite(x, y int) {
 	rx, ry := uf.root(x), uf.root(y)
 	// もし、違うグループだったら
 	if rx != ry {
@@ -400,16 +519,16 @@ func (uf unionFind) unite(x, y int) {
 	}
 }
 
-func (uf unionFind) same(x, y int) bool {
+func (uf UnionFind) same(x, y int) bool {
 	return uf.root(x) == uf.root(y)
 }
 
-func (uf unionFind) size(x int) int {
+func (uf UnionFind) size(x int) int {
 	// uniteで、併合するたびに-1, -2・・・となっていくので、下記のとおりで求まる
 	return -uf.par[uf.root(x)]
 }
 
-func (uf unionFind) groups() [][]int {
+func (uf UnionFind) groups() [][]int {
 	rootBuf, groupSize := make([]int, uf.n), make([]int, uf.n)
 	// 各要素の根を取得し、groupごとのサイズを取得
 	for i := 0; i < uf.n; i++ {

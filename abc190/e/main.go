@@ -8,27 +8,127 @@ import (
 	"strconv"
 )
 
+type nd struct {
+	r []int
+	w int
+}
+
+type q []nd
+
+func (q *q) enqueue(i nd) {
+	*q = append(*q, i)
+}
+
+func (q *q) dequeue() nd {
+	result := (*q)[0]
+	*q = (*q)[1:]
+	return result
+}
+
 func main() {
 	sc := newScanner()
 	n := sc.readInt()
-	w := sc.readInt()
-	a := getNums(sc, n)
-	var dp = make([][]bool, n+1)
+	m := sc.readInt()
+	g := make([]nd, n+1)
+	// 前処理
 	for i := 0; i < n+1; i++ {
-		tmp := make([]bool, 20)
-		dp[i] = tmp
+		// すべてのnodeのweightを-1で初期化
+		g[i] = nd{r: []int{}, w: -1}
 	}
-	dp[0][0] = true
-	for i := 0; i < n; i++ {
-		for j := 0; j < len(a); j++ {
-			if dp[i][j] {
-				dp[i+1][j] = true
-				dp[i][j+a[i]] = true
+	for i := 0; i < m; i++ {
+		a := sc.readInt()
+		b := sc.readInt()
+		// 双方向にedgeをはる
+		g[a].r = append(g[a].r, b)
+		g[b].r = append(g[b].r, a)
+	}
+	k := sc.readInt()
+	c := make([]int, k)
+	for i := 0; i < k; i++ {
+		c[i] = sc.readInt()
+	}
+	// ノード同士のコスト 0-indexed
+	var d = make([][]int, k)
+	for i := 0; i < k; i++ {
+		tmp := make([]int, k)
+		d[i] = tmp
+	}
+	// 各cを起点とした、その他のcまでのコストを算出 bfs
+	for i := 0; i < k; i++ {
+		gd := make([]nd, n+1)
+		copy(gd, g)
+		var queue q
+		gd[c[i]].w = 0
+		queue.enqueue(gd[c[i]])
+		for len(queue) > 0 {
+			x := queue.dequeue()
+			for j := 0; j < len(x.r); j++ {
+				// 到達済みならskip
+				if gd[x.r[j]].w != -1 {
+					continue
+				}
+				// 未到達なら、weight+1してenq
+				gd[x.r[j]].w = x.w + 1
+				queue.enqueue(gd[x.r[j]])
+			}
+		}
+		for j := 0; j < k; j++ {
+			if i == j {
+				continue
+			}
+			d[i][j] = gd[c[j]].w
+			if d[i][j] == -1 {
+				fmt.Println("-1")
+				os.Exit(0)
 			}
 		}
 	}
-	fmt.Println(dp)
-	fmt.Println(w)
+	// 前処理終わり
+
+	// 本処理 bitdp
+	dp := make([][]int, 1<<k)
+	for i := 0; i < 1<<k; i++ {
+		var tmp = make([]int, k)
+		for j := 0; j < k; j++ {
+			tmp[j] = math.MaxInt32
+		}
+		dp[i] = tmp
+	}
+	for i := 0; i < k; i++ {
+		// i番目のノードを開始とした場合の初期化 最後に1をたすので、1で初期化してる
+		// N=4の場合、dp[0100][2] =1 というのは、2番めのノードからスタートして、2番めのノードにいるイメージ
+		dp[1<<i][i] = 1
+	}
+	for bit := 0; bit < 1<<k; bit++ {
+		// iは、fromのノードのindex番号
+		for i := 0; i < k; i++ {
+			// dp[bit][i]というのが一つ前のノードの最小値になるので、それがまだ求められていなければskip
+			if dp[bit][i] == math.MaxInt32 {
+				continue
+			}
+			// jは、toのノードのindex番号
+			for j := 0; j < k; j++ {
+				// すでにそのjに訪れていればskip
+				if bit&1<<j == 1 {
+					continue
+				}
+				// dp[bit^1<<j][j]が今回更新したいdpの場所
+				// dp[bit][i]がその一つ前のノードまでのdp
+				// d[i][j]が今回更新したい箇所までの距離
+				if dp[bit^1<<j][j] > dp[bit][i]+d[i][j] {
+					dp[bit^1<<j][j] = dp[bit][i] + d[i][j]
+				}
+			}
+		}
+	}
+	var ans int = math.MaxInt32
+	// N=4であれば、dp[1111][x]の意味が「すべてのノードを通り、現在xにいる」ということなので、dp[1111]のうちの最小値を取ればいい
+	for i := range dp[len(dp)-1] {
+		if ans > dp[len(dp)-1][i] {
+			ans = dp[len(dp)-1][i]
+		}
+	}
+	fmt.Println(ans)
 
 }
 
@@ -212,6 +312,35 @@ func binarySearch(array []int, target int) int {
 	}
 }
 
+// LowerBound ...
+func lowerBound(array []int, target int) int {
+	low, high, mid := 0, len(array)-1, 0
+	for low <= high {
+		mid = (low + high) / 2
+		if array[mid] >= target {
+			high = mid - 1
+		} else {
+			low = mid + 1
+		}
+	}
+	return low
+}
+
+// UpperBound ...
+func upperBound(array []int, target int) int {
+	low, high, mid := 0, len(array)-1, 0
+
+	for low <= high {
+		mid = (low + high) / 2
+		if array[mid] > target {
+			high = mid - 1
+		} else {
+			low = mid + 1
+		}
+	}
+	return low
+}
+
 func min(nums ...int) int {
 	ret := nums[0]
 	for i := 0; i < len(nums); i++ {
@@ -230,6 +359,16 @@ func max(nums ...int) int {
 		}
 	}
 	return ret
+}
+
+// アドレスで渡す必要があるんか。。。
+func chmin(pa, pb *int) bool {
+	a, b := *pa, *pb
+	if a > b {
+		*pa = *pb
+		return true
+	}
+	return false
 }
 
 // mod
@@ -362,13 +501,13 @@ func (sc *scanner) readUint64() uint64 {
 }
 
 // unionfind
-type unionFind struct {
+type UnionFind struct {
 	n   int
 	par []int
 }
 
-func newUnionFind(n int) *unionFind {
-	uf := new(unionFind)
+func newUnionFind(n int) *UnionFind {
+	uf := new(UnionFind)
 	uf.n = n
 	uf.par = make([]int, n)
 	for i := range uf.par {
@@ -377,7 +516,7 @@ func newUnionFind(n int) *unionFind {
 	return uf
 }
 
-func (uf unionFind) root(x int) int {
+func (uf UnionFind) root(x int) int {
 	if uf.par[x] < 0 {
 		return x
 	}
@@ -386,7 +525,7 @@ func (uf unionFind) root(x int) int {
 	return uf.par[x]
 }
 
-func (uf unionFind) unite(x, y int) {
+func (uf UnionFind) unite(x, y int) {
 	rx, ry := uf.root(x), uf.root(y)
 	// もし、違うグループだったら
 	if rx != ry {
@@ -400,16 +539,16 @@ func (uf unionFind) unite(x, y int) {
 	}
 }
 
-func (uf unionFind) same(x, y int) bool {
+func (uf UnionFind) same(x, y int) bool {
 	return uf.root(x) == uf.root(y)
 }
 
-func (uf unionFind) size(x int) int {
+func (uf UnionFind) size(x int) int {
 	// uniteで、併合するたびに-1, -2・・・となっていくので、下記のとおりで求まる
 	return -uf.par[uf.root(x)]
 }
 
-func (uf unionFind) groups() [][]int {
+func (uf UnionFind) groups() [][]int {
 	rootBuf, groupSize := make([]int, uf.n), make([]int, uf.n)
 	// 各要素の根を取得し、groupごとのサイズを取得
 	for i := 0; i < uf.n; i++ {

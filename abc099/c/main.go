@@ -11,25 +11,25 @@ import (
 func main() {
 	sc := newScanner()
 	n := sc.readInt()
-	w := sc.readInt()
-	a := getNums(sc, n)
-	var dp = make([][]bool, n+1)
-	for i := 0; i < n+1; i++ {
-		tmp := make([]bool, 20)
-		dp[i] = tmp
+	var dp = make([]int, 100010)
+	for i := 0; i < len(dp); i++ {
+		dp[i] = i
 	}
-	dp[0][0] = true
-	for i := 0; i < n; i++ {
-		for j := 0; j < len(a); j++ {
-			if dp[i][j] {
-				dp[i+1][j] = true
-				dp[i][j+a[i]] = true
+	for i := 0; i < len(dp); i++ {
+		for j := 6; j < len(dp); j = j * 6 {
+			if i+j >= len(dp) {
+				break
 			}
+			dp[i+j] = min(dp[i+j], dp[i]+1)
+		}
+		for j := 9; j < len(dp); j = j * 9 {
+			if i+j >= len(dp) {
+				break
+			}
+			dp[i+j] = min(dp[i+j], dp[i]+1)
 		}
 	}
-	fmt.Println(dp)
-	fmt.Println(w)
-
+	fmt.Println(dp[n])
 }
 
 /*
@@ -212,6 +212,35 @@ func binarySearch(array []int, target int) int {
 	}
 }
 
+// LowerBound ...
+func lowerBound(array []int, target int) int {
+	low, high, mid := 0, len(array)-1, 0
+	for low <= high {
+		mid = (low + high) / 2
+		if array[mid] >= target {
+			high = mid - 1
+		} else {
+			low = mid + 1
+		}
+	}
+	return low
+}
+
+// UpperBound ...
+func upperBound(array []int, target int) int {
+	low, high, mid := 0, len(array)-1, 0
+
+	for low <= high {
+		mid = (low + high) / 2
+		if array[mid] > target {
+			high = mid - 1
+		} else {
+			low = mid + 1
+		}
+	}
+	return low
+}
+
 func min(nums ...int) int {
 	ret := nums[0]
 	for i := 0; i < len(nums); i++ {
@@ -230,6 +259,16 @@ func max(nums ...int) int {
 		}
 	}
 	return ret
+}
+
+// アドレスで渡す必要があるんか。。。
+func chmin(pa, pb *int) bool {
+	a, b := *pa, *pb
+	if a > b {
+		*pa = *pb
+		return true
+	}
+	return false
 }
 
 // mod
@@ -362,13 +401,13 @@ func (sc *scanner) readUint64() uint64 {
 }
 
 // unionfind
-type unionFind struct {
+type UnionFind struct {
 	n   int
 	par []int
 }
 
-func newUnionFind(n int) *unionFind {
-	uf := new(unionFind)
+func newUnionFind(n int) *UnionFind {
+	uf := new(UnionFind)
 	uf.n = n
 	uf.par = make([]int, n)
 	for i := range uf.par {
@@ -377,7 +416,7 @@ func newUnionFind(n int) *unionFind {
 	return uf
 }
 
-func (uf unionFind) root(x int) int {
+func (uf UnionFind) root(x int) int {
 	if uf.par[x] < 0 {
 		return x
 	}
@@ -386,7 +425,7 @@ func (uf unionFind) root(x int) int {
 	return uf.par[x]
 }
 
-func (uf unionFind) unite(x, y int) {
+func (uf UnionFind) unite(x, y int) {
 	rx, ry := uf.root(x), uf.root(y)
 	// もし、違うグループだったら
 	if rx != ry {
@@ -400,16 +439,16 @@ func (uf unionFind) unite(x, y int) {
 	}
 }
 
-func (uf unionFind) same(x, y int) bool {
+func (uf UnionFind) same(x, y int) bool {
 	return uf.root(x) == uf.root(y)
 }
 
-func (uf unionFind) size(x int) int {
+func (uf UnionFind) size(x int) int {
 	// uniteで、併合するたびに-1, -2・・・となっていくので、下記のとおりで求まる
 	return -uf.par[uf.root(x)]
 }
 
-func (uf unionFind) groups() [][]int {
+func (uf UnionFind) groups() [][]int {
 	rootBuf, groupSize := make([]int, uf.n), make([]int, uf.n)
 	// 各要素の根を取得し、groupごとのサイズを取得
 	for i := 0; i < uf.n; i++ {

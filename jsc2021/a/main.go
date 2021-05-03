@@ -12,11 +12,11 @@ import (
 func main() {
 	io := NewIo()
 	defer io.Flush()
-	A := io.NextInt()
-	B := io.NextInt()
-	C := io.NextInt()
-	S := io.Next()
-	io.PrintLn(A+B+C, S)
+	x := io.NextFloat()
+	y := io.NextFloat()
+	z := io.NextFloat()
+	per := y / x
+	fmt.Println(math.Ceil(per*z) - 1)
 }
 
 //_________io_________//

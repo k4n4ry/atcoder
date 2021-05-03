@@ -12,11 +12,32 @@ import (
 func main() {
 	io := NewIo()
 	defer io.Flush()
-	A := io.NextInt()
-	B := io.NextInt()
-	C := io.NextInt()
-	S := io.Next()
-	io.PrintLn(A+B+C, S)
+	n := io.NextInt()
+	m := io.NextInt()
+	a := getNums(io, n)
+	b := getNums(io, m)
+	a = append(a, 3001)
+	b = append(b, 3001)
+	var aidx, bidx = 0, 0
+	var anses []int
+	for {
+		if a[aidx] == 3001 && b[bidx] == 3001 {
+			break
+		}
+		if a[aidx] == b[bidx] {
+			aidx++
+			bidx++
+		} else {
+			if a[aidx] < b[bidx] {
+				anses = append(anses, a[aidx])
+				aidx++
+			} else {
+				anses = append(anses, b[bidx])
+				bidx++
+			}
+		}
+	}
+	io.PrintIntLn(anses)
 }
 
 //_________io_________//
@@ -120,6 +141,15 @@ func min(nums ...int) int {
 		}
 	}
 	return ret
+}
+
+// int配列で取得
+func getNums(io *Io, len int) (nums []int) {
+	var a = make([]int, len)
+	for i := 0; i < len; i++ {
+		a[i] = io.NextInt()
+	}
+	return a
 }
 
 func max(nums ...int) int {
